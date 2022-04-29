@@ -4,7 +4,7 @@
 <ul>
   <li>Python</li>
   <li>Flask</li>
-  <li>MySQL Server</li>
+  <li>MySQL</li>
 </ul>
 Leitura e escrita: https://youtu.be/sI8VW0F8CSE
 <br>

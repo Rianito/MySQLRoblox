@@ -3,31 +3,31 @@ import pymysql.cursors
 import json
 from flask import Flask, request
 
-envs = dotenv_values('C:/Users/riang/Documents/Study/Pessoal/Python/.env')
+envs = dotenv_values(".env")
 
 # Flask Server
 
 
 def conectar():
-    connection = pymysql.connect(host=envs['IP'],
-                                 user='rian',
-                                 password=envs['PASSWORD'],
-                                 database='simpleguy',
+    connection = pymysql.connect(host=envs["IP"],
+                                 user="rian",
+                                 password=envs["PASSWORD"],
+                                 database="simpleguy",
                                  cursorclass=pymysql.cursors.DictCursor)
     return connection
 
 
 def check_data(data):
     try:
-        return False, data["Experience"], data["Amount"]
-    except KeyError:
+        return False, int(data["Experience"]), int(data["Amount"])
+    except KeyError or ValueError:
         return "Formato errado."
 
 
 def create(userid, experience, amount):
     connection = conectar()
     cursor = connection.cursor()
-    cursor.execute("INSERT INTO users VALUES (%s, %s, %s);",
+    cursor.execute("INSERT INTO users VALUES (%s, %i, %i);",
                    (userid, experience, amount))
     connection.commit()
     connection.close()
@@ -47,12 +47,13 @@ def load(userid):
 
 def save(userid, data):
     error, experience, amount = check_data(data)
-    if error: return error
+    if error:
+        return error
     if load(userid):
         connection = conectar()
         cursor = connection.cursor()
         cursor.execute(
-            "UPDATE users SET Experience = %s, Amount = %s WHERE UserID = %s",
+            "UPDATE users SET Experience = %i, Amount = %i WHERE UserID = %s",
             (experience, amount, userid))
         connection.commit()
         connection.close()
@@ -65,7 +66,7 @@ app = Flask("app")
 @app.route("/user/<userid>", methods={"GET", "POST"})
 def datastore(userid):
 
-    if request.headers.get("Auth") != envs["AUTH"]:
+    if request.headers.get("Authorization") != envs["AUTH"]:
         return "Acesso Negado."
 
     if request.method == "GET":
@@ -75,5 +76,6 @@ def datastore(userid):
         return save(userid, request.get_json())
 
     return "Erro no método."
+
 
 app.run("localhost", 8000)
